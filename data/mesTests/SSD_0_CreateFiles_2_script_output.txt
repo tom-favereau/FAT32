@@ -1,0 +1,18 @@
+$ ls
+/
+	.       .   	0
+	..      .   	0
+$ touch file0.h
+$ touch file1.h
+$ touch file2.h
+$ touch file3.h
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	file0   .h  	0
+	file1   .h  	0
+	file2   .h  	0
+	file3   .h  	0
+$ 
+$ 

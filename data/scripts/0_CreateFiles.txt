@@ -1,0 +1,11 @@
+ls
+touch file0.h
+touch file1.h
+touch file2.h
+touch file3.h
+ls
+less file0.h
+less file1.h
+less file2.h
+less file3.h
+

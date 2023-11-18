@@ -1,0 +1,22 @@
+$ ls
+/
+	.       .   	0
+	..      .   	0
+$ echo "ABCDEFGH" > ALPHABET.TXT
+$ echo "0123456789" > NOMBRE.TXT
+$ echo "AZERERTY" > KEY_LAYOUT.TXT
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	ALPHABET.TXT	8
+	NOMBRE  .TXT	10
+	KEY_LAYO.TXT	8
+$ less ALPHABET.TXT
+ABCDEFGH
+$ less NOMBRE.TXT
+0123456789
+$ less KEY_LAYOUT.TXT
+AZERERTY
+$ 
+$ 

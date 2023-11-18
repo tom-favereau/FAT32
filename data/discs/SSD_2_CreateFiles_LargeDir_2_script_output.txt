@@ -1,0 +1,80 @@
+$ ls
+/
+	.       .   	0
+	..      .   	0
+$ touch file0.h
+$ touch file1.h
+$ touch file2.h
+$ touch file3.h
+$ touch file4.h
+$ touch file5.h
+$ touch file6.h
+$ touch file7.h
+$ touch file8.h
+$ touch file9.h
+$ touch file10.h
+$ touch file11.h
+$ touch file12.h
+$ touch file13.h
+$ touch file14.h
+$ touch file15.h
+$ touch file16.h
+$ touch file17.h
+$ touch file18.h
+$ touch file19.h
+$ touch file20.h
+$ touch file21.h
+$ touch file22.h
+$ touch file23.h
+$ touch file24.h
+$ touch file25.h
+$ touch file26.h
+$ touch file27.h
+$ touch file28.h
+$ touch file29.h
+$ touch file30.h
+$ touch file31.h
+$ touch file32.h
+$ touch file33.h
+$ touch file34.h
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	file0   .h  	0
+	file1   .h  	0
+	file2   .h  	0
+	file3   .h  	0
+	file4   .h  	0
+	file5   .h  	0
+	file6   .h  	0
+	file7   .h  	0
+	file8   .h  	0
+	file9   .h  	0
+	file10  .h  	0
+	file11  .h  	0
+	file12  .h  	0
+	file13  .h  	0
+	file14  .h  	0
+	file15  .h  	0
+	file16  .h  	0
+	file17  .h  	0
+	file18  .h  	0
+	file19  .h  	0
+	file20  .h  	0
+	file21  .h  	0
+	file22  .h  	0
+	file23  .h  	0
+	file24  .h  	0
+	file25  .h  	0
+	file26  .h  	0
+	file27  .h  	0
+	file28  .h  	0
+	file29  .h  	0
+	file30  .h  	0
+	file31  .h  	0
+	file32  .h  	0
+	file33  .h  	0
+	file34  .h  	0
+$ 
+$ 

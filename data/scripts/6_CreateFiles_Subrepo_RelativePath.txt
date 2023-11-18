@@ -1,0 +1,28 @@
+ls
+echo "0123456789" > file1.h
+echo "0123456789" > file2.h
+echo "0123456789" > /file3.h
+mkdir /usr
+echo "0123456789" > file4.h
+echo "0123456789" > /file5.h
+mkdir lib
+cd lib
+mkdir include
+echo "ABCDEFGH" > /usr/file1.h
+echo "ABCDEFGH" > ../usr/file2.h
+echo "azerty" > include/file4.h
+cd include
+echo "ABCDEFGH" > ../../usr/file3.h
+echo "azerty" > file5.h
+cd ../..
+ls
+cd usr
+less file1.h
+less file2.h
+less file3.h
+ls
+cd ../lib/include
+ls
+less file4.h
+less file5.h
+

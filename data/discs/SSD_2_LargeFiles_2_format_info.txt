@@ -1,0 +1,17 @@
+Formatting info
+Sector size in byte : 
+512
+Reserved sector : 
+32
+Size of a cluster in number of sectors : 
+2
+total number of memory sector in the device : 
+1024
+total number of cluster in data : 
+384
+number of fat tables inside device : 
+2
+number of sectors used by a single FAT : 
+3
+root cluster : 
+2

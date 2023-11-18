@@ -1,0 +1,39 @@
+$ ls
+/
+	.       .   	0
+	..      .   	0
+$ echo "0123456789" > /file1.h
+$ echo "0123456789" > /file2.h
+$ echo "0123456789" > /file3.h
+$ mkdir /usr
+$ echo "0123456789" > /file4.h
+$ echo "0123456789" > /file5.h
+$ mkdir /lib
+$ mkdir /lib/include
+$ echo "ABCDEFGH" > /usr/file1.h
+$ echo "ABCDEFGH" > /usr/file2.h
+$ echo "ABCDEFGH" > /usr/file3.h
+$ echo "azerty" > /lib/include/file4.h
+$ echo "azerty" > /lib/include/file5.h
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	file1   .h  	10
+	file2   .h  	10
+	file3   .h  	10
+	usr     .   	0
+	file4   .h  	10
+	file5   .h  	10
+	lib     .   	0
+$ less /usr/file1.h
+ABCDEFGH
+$ less /usr/file2.h
+ABCDEFGH
+$ less /usr/file3.h
+ABCDEFGH
+$ less /lib/include/file5.h
+azerty
+$ less /lib/include/file5.h
+azerty
+$ 

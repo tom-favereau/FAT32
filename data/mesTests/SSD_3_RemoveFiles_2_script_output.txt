@@ -1,0 +1,141 @@
+$ ls
+/
+	.       .   	0
+	..      .   	0
+$ touch file0.h
+$ touch file1.h
+$ touch file2.h
+$ touch file3.h
+$ touch file4.h
+$ echo "0123456789" > file5.h
+$ touch file6.h
+$ touch file7.h
+$ echo "0123456789" > file8.h
+$ echo "0123456789" > file9.h
+$ touch file10.h
+$ touch file11.h
+$ echo "0123456789" > file12.h
+$ echo "0123456789" > file13.h
+$ touch file14.h
+$ touch file15.h
+$ touch file16.h
+$ touch file17.h
+$ touch file18.h
+$ touch file19.h
+$ touch file20.h
+$ touch file21.h
+$ touch file22.h
+$ touch file23.h
+$ touch file24.h
+$ touch file25.h
+$ touch file26.h
+$ touch file27.h
+$ touch file28.h
+$ touch file29.h
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	file0   .h  	0
+	file1   .h  	0
+	file2   .h  	0
+	file3   .h  	0
+	file4   .h  	0
+	file5   .h  	10
+	file6   .h  	0
+	file7   .h  	0
+	file8   .h  	10
+	file9   .h  	10
+	file10  .h  	0
+	file11  .h  	0
+	file12  .h  	10
+	file13  .h  	10
+	file14  .h  	0
+	file15  .h  	0
+	file16  .h  	0
+	file17  .h  	0
+	file18  .h  	0
+	file19  .h  	0
+	file20  .h  	0
+	file21  .h  	0
+	file22  .h  	0
+	file23  .h  	0
+	file24  .h  	0
+	file25  .h  	0
+	file26  .h  	0
+	file27  .h  	0
+	file28  .h  	0
+	file29  .h  	0
+$ rm file8.h
+$ rm file9.h
+$ rm file12.h
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	file0   .h  	0
+	file1   .h  	0
+	file2   .h  	0
+	file3   .h  	0
+	file4   .h  	0
+	file5   .h  	10
+	file6   .h  	0
+	file7   .h  	0
+	file10  .h  	0
+	file11  .h  	0
+	file13  .h  	10
+	file14  .h  	0
+	file15  .h  	0
+	file16  .h  	0
+	file17  .h  	0
+	file18  .h  	0
+	file19  .h  	0
+	file20  .h  	0
+	file21  .h  	0
+	file22  .h  	0
+	file23  .h  	0
+	file24  .h  	0
+	file25  .h  	0
+	file26  .h  	0
+	file27  .h  	0
+	file28  .h  	0
+	file29  .h  	0
+$ echo "ABCDEFGH" > ALPHABET.TXT
+$ echo "ABCDEFGH" > file9.h
+$ echo "ABCDEFGH" > ALPHABET.MD
+$ ls
+/
+	.       .   	0
+	..      .   	0
+	file0   .h  	0
+	file1   .h  	0
+	file2   .h  	0
+	file3   .h  	0
+	file4   .h  	0
+	file5   .h  	10
+	file6   .h  	0
+	file7   .h  	0
+	ALPHABET.TXT	8
+	file9   .h  	8
+	file10  .h  	0
+	file11  .h  	0
+	ALPHABET.MD 	8
+	file13  .h  	10
+	file14  .h  	0
+	file15  .h  	0
+	file16  .h  	0
+	file17  .h  	0
+	file18  .h  	0
+	file19  .h  	0
+	file20  .h  	0
+	file21  .h  	0
+	file22  .h  	0
+	file23  .h  	0
+	file24  .h  	0
+	file25  .h  	0
+	file26  .h  	0
+	file27  .h  	0
+	file28  .h  	0
+	file29  .h  	0
+$ 
+$ 
