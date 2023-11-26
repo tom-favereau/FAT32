@@ -60,7 +60,7 @@ public class FileManagerApp extends Application{
         dataAccess = new DataAccess(device, fatAccess);
         boolean[] rootAttribut = new boolean[8];
         rootAttribut[0] = false; rootAttribut[1] = false; rootAttribut[2] = true; rootAttribut[4] = true;
-        this.curentDirectory = new DataFile("/", "", rootAttribut, fatAccess.getRootIndex(), 0, null);
+        this.curentDirectory = new DataFile("/", "", rootAttribut, fatAccess.getRootIndex(), 0, null, 0, 0, 0);
 
         path = "/";
         this.Mystage = stage;
@@ -111,7 +111,7 @@ public class FileManagerApp extends Application{
             }
         });
 
-        scene = new Scene(layout, 700, 400);
+        scene = new Scene(layout, 710, 400);
         scene.setFill(Color.GREY);
         stage.setScene(scene);
         stage.show();
@@ -397,7 +397,7 @@ public class FileManagerApp extends Application{
         //on récupère le contenus du fichier
         String[] namePlusExtention = name.split("\\.+");
         Vector<DataFile> subFile = dataAccess.readSubFile(curentDirectory);
-        DataFile openFile = new DataFile("name", "ext", new boolean[8], 2, 0, null); //c'est juste pour l'initialiser sinon il m'embête
+        DataFile openFile = new DataFile("name", "ext", new boolean[8], 2, 0, null, 0, 0, 0); //c'est juste pour l'initialiser sinon il m'embête
         for (int i = 0; i<subFile.size(); i++){
             if (subFile.get(i).getName().startsWith(namePlusExtention[0]) && subFile.get(i).getExtention().startsWith(namePlusExtention[1])){
                 String content = dataAccess.readFileContent(subFile.get(i));

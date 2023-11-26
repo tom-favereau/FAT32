@@ -49,6 +49,7 @@ public class Shell {
         Device device = new Device();
         //device.mount("/Users/tom/Programation/dep_info/software_engineering/fat32-favereau-suspene-shao/data/mesTests/SSD_0_CreateFiles_2.data");
         device.mount("data/mesTests/SSD_0_CreateFiles_2.data");
+        //device.mount("data/mesTests/SSD_1_SmallFiles_2.data");
         fileSystem = new FileSystem();
         fileSystem.format(device, 2);
         this.deviceName = "SSD_0_CreateFiles_2";
@@ -137,13 +138,13 @@ public class Shell {
                 String fileName = fileSystem.getCurrentDirectory().toString();
                 Vector<DataFile> subFile = fileSystem.listSubFile(fileName);
                 for (DataFile dataFile : subFile) {
-                    if (dataFile.getAttribut()[2]){
+                    if (!dataFile.getAttribut()[1] && dataFile.getAttribut()[2]){ //système et non caché
                         System.out.println(yellowBold + dataFile.getName() + " " + dataFile.getExtention() + " " + dataFile.getSize() + resetColor);
                     }
-                    else if (dataFile.getAttribut()[4]){
+                    else if (!dataFile.getAttribut()[1] && dataFile.getAttribut()[4]){ //dossier et non caché
                         System.out.println(blueColor + dataFile.getName() + " " + dataFile.getExtention() + " " + dataFile.getSize() + resetColor);
                     }
-                    else {
+                    else if (!dataFile.getAttribut()[1]){ //fichier non caché
                         System.out.println(dataFile.getName() + " " + dataFile.getExtention() + " " + dataFile.getSize());
                     }
                 }
@@ -170,8 +171,8 @@ public class Shell {
 
 
 
-            else if (command.startsWith("cat")) {
-                // Code à exécuter si la commande commence par "cat"
+            else if (command.startsWith("less")) {
+                // Code à exécuter si la commande commence par "less"
                 String[] parts = command.split("\\s+", 2);
                 if (parts.length > 1) {
                     String fileName = parts[1];
@@ -220,11 +221,19 @@ public class Shell {
                 String[] parts = command.split("\\s+", 2);
                 if (parts.length > 1) {
                     String fileName = parts[1];
-                    fileSystem.removeFile(fileName);
+                    boolean remove = fileSystem.removeFile(fileName);
+                    if (!remove){
+                        System.out.println("le fichier n'as pas pu être suprimé");
+                    }
                 } else {
                     System.out.println("Missing file name for rm command");
                 }
             }
+
+            else if (command.equals("pwd")){
+                System.out.println(fileSystem.getCurrentDirectory().toString());
+            }
+
             else {
                 System.out.println("Unknown command: " + command);
             }

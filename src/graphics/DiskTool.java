@@ -7,8 +7,10 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -65,9 +67,12 @@ public class DiskTool {
 
     private void displayFragmentation(){
         Vector<Integer> visited = new Vector<>();
-
+        int size = fatAccess.getFatNumberOfCase() - fatAccess.totalFreeSpace() - 2; //-2 car les 2 première case ne sont pas occupé
         for (int i = 2; i < fatAccess.getFatNumberOfCase(); i++) {
-            if (fatAccess.read(i) == 0x00000000){
+            if (size == 0){
+                break;
+            }
+            else if (fatAccess.read(i) == 0x00000000){
                 // Utilisation de JavaFX pour afficher le cluster
                 Color currentColor = Color.WHITE;
                 Rectangle clusterRectangle = new Rectangle(30, 20); // Ajustez la taille selon vos besoins
@@ -78,26 +83,32 @@ public class DiskTool {
                 int index = i;
                 int nextIndex = i;
 
-
+                Color currentColor = getRandomColor();
 
                 do {
+                    size--;
                     index = nextIndex;
                     visited.add(index);
 
                     // Utilisation de JavaFX pour afficher le cluster
-                    Color currentColor = getRandomColor();
-                    Rectangle clusterRectangle = new Rectangle(30, 20); // Ajustez la taille selon vos besoins
+
+                    Rectangle clusterRectangle = new Rectangle(30, 20);
                     clusterRectangle.setFill(currentColor);
-                    layout.add(clusterRectangle, index%15, (index/15)+1); // Ajoutez au GridPane
+
+                    Text text = new Text(String.valueOf(i)); // Ajoutez le texte avec la valeur de i
+                    StackPane stackPane = new StackPane(clusterRectangle, text);
+
+                    layout.add(stackPane, index%15, (index/15)+1); // Ajoutez au GridPane
 
                     nextIndex = fatAccess.read(index);
                 } while (nextIndex != 0x0FFFFFFF);
+
             }
         }
     }
 
     private void format(){
-
+        System.out.println("il faut formater le disque");
     }
 
     private Color getRandomColor() {

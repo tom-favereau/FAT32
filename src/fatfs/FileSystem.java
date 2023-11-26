@@ -4,13 +4,12 @@ package fatfs;
 import fs.*;
 
 import java.io.FileNotFoundException;
-import java.lang.reflect.Executable;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
-
-import fatfs.Path;
-
+/**
+ * Implementation of IFileSystem.
+ */
 public class FileSystem implements IFileSystem {
 
     private DataAccess dataAccess;
@@ -18,6 +17,10 @@ public class FileSystem implements IFileSystem {
     private FatAccess fatAccess;
     private Path currentDirectory;
 
+    /**
+     * Initialization of a FileSystem instance.
+     * No mounted device.
+     */
     public FileSystem(){
         this.device = null;
         this.dataAccess = null;
@@ -26,24 +29,24 @@ public class FileSystem implements IFileSystem {
     }
 
     /**
-     * Format the device
+     * Formats the device
      *
-     * @param dev             device to be formatted
-     * @param size_of_cluster
+     * @param dev device to be formatted.
+     * @param size_of_cluster size of a cluster in sectors in the device.
      */
     @Override
     public void format(IDevice dev, int size_of_cluster) {
-        //on met tout à 0
+        //Resetting the device.
         for (int i = 0; i<dev.getNumberOfSectors(); i++){
             byte[] sector = new byte[dev.getSectorSize()];
             dev.write(sector, i);
         }
-        //on calcule la taille aloué a la fat
-        long numberOfCluster = (dev.getNumberOfSectors()-32)*dev.getSectorSize()/(2*4+ (long) dev.getSectorSize() *size_of_cluster);
+        //Computing the FAT allocation.
+        long numberOfCluster = (dev.getNumberOfSectors() - 32)*dev.getSectorSize()/(2*4 + (long) dev.getSectorSize()*size_of_cluster);
         long sizeFat = numberOfCluster*4;
         long numberOfSectorFat = sizeFat/dev.getSectorSize();
 
-        //on écrit les information dans le premier secteur
+        //Writing information in the first cluster.
         byte[] sector = dev.read(0);
         writeBytes(sector, 0x00B, 2, dev.getSectorSize());
         writeBytes(sector, 0x00D, 1, size_of_cluster);
@@ -54,52 +57,53 @@ public class FileSystem implements IFileSystem {
         writeBytes(sector, 0x02c, 4, 2);
         dev.write(sector, 0);
 
-        //on crée root
-        //on écrit les fichier .. et .
+        //TODO Compact this.
+        //Root
         // dir .
         FatAccess newFatAccess = new FatAccess(dev);
         DataAccess newDataAccess = new DataAccess(dev, newFatAccess);
         byte[] newRootSector = dev.read(newDataAccess.getBeginDataSector() + newFatAccess.getSizeCluster()*newFatAccess.getRootIndex());
-        String nameToByteDir = String.format("%-" + 8 + "s", "."); //on complète avec des espaces
+        //Name
+        String nameToByteDir = String.format("%-" + 8 + "s", ".");
         System.arraycopy(nameToByteDir.getBytes(), 0, newRootSector, 0, 8);
-        String extentionToByteDir = String.format("%-" + 3 + "s", ""); // on complète avec des espcaes
-        System.arraycopy(extentionToByteDir.getBytes(), 0, newRootSector, 0+8, 3);
-
-
+        //Extension
+        String extensionToByteDir = String.format("%-" + 3 + "s", "");
+        System.arraycopy(extensionToByteDir.getBytes(), 0, newRootSector, 0+8, 3);
+        //Attributes
         boolean[] attribut = new boolean[8];
-        attribut[0] = true;
-        attribut[2] = true;
-        attribut[4] = true;
+        attribut[0] = true; attribut[2] = true; attribut[4] = true;
         byte rootAttribut = 0;
-        for (int k = 0; k<8; k++){
+        for (int k = 0; k < 8; k++){
             if (attribut[k]){
                 rootAttribut |= (1 << k);
             }
-            //newFileAttribut |= (attribut[k] ? 1 : 0) << (7-k);
         }
-
         newRootSector[0+11] = rootAttribut;
+
         writeBytes(newRootSector, 28+0, 4, 0);
         writeBytes(newRootSector, 20+0, 4, newFatAccess.getRootIndex());
 
         //dir ..
+        //Name
         String nameToByteDirParent = String.format("%-" + 8 + "s", ".."); //on complète avec des espaces
         System.arraycopy(nameToByteDirParent.getBytes(), 0, newRootSector, 32, 8);
-        String extentionToByteDirParent = String.format("%-" + 3 + "s", ""); // on complète avec des espcaes
-        System.arraycopy(extentionToByteDirParent.getBytes(), 0, newRootSector, 32+8, 3);
+        //Extension
+        String extensionToByteDirParent = String.format("%-" + 3 + "s", ""); // on complète avec des espcaes
+        System.arraycopy(extensionToByteDirParent.getBytes(), 0, newRootSector, 32+8, 3);
 
+        //Attributes
         newRootSector[32+11] = rootAttribut;
-        writeBytes(newRootSector, 28+32, 4, 0);
 
+        writeBytes(newRootSector, 28+32, 4, 0);
         writeBytes(newRootSector, 20+32, 4, newFatAccess.getRootIndex());
 
-        //on écrit les deux premier secteur de la fat
+        //First two sectors of the FAT are marked as taken.
         newFatAccess.write(0x0FFFFFF0, 0);
         newFatAccess.write(0x0FFFFFFF, 1);
-        //on écrit root dans la fat
+        //Writing Root in the FAT.
         newFatAccess.write(0x0FFFFFFF, 2);
 
-        //on écrit sur le disque
+        //Writing in the device.
         dev.write(newRootSector,newDataAccess.getBeginDataSector() + newFatAccess.getSizeCluster()*newFatAccess.getRootIndex());
     }
 
@@ -134,49 +138,35 @@ public class FileSystem implements IFileSystem {
     }
 
     /**
-     * Get the amount of free space
+     * Get the amount of free space.
      *
-     * @return the amount of free space in the currently mounted device, 0 if no device is mounted
+     * @return the amount of free space in the currently mounted device, 0 if no device is mounted.
      */
     @Override
     public int totalFreeSpace() {
         return fatAccess.totalFreeSpace();
     }
 
-    private void setWorkingDirectoryRoot(){
-
-    }
     /**
-     * Set the working directory in the mounted device
+     * Set the working directory in the mounted device.
      *
-     * @param path path to new working directory
+     * @param path path to new working directory.
      */
     @Override
     public void setWorkingDirectory(String path) throws FileNotFoundException {
         try {
-            //Path directory = filenameToPath(path);
-            Path directory = new Path(dataAccess, obtenirCheminAbsolu(currentDirectory.toString(), path), null);
+            //Attempting to create a path from given string path.
+            Path directory = new Path(dataAccess, getAbsolutePath(currentDirectory.toString(), path), null);
+            //Checking if the path is a directory.
             if (directory.getFile().getAttribut()[4]){
                 this.currentDirectory = directory;
             } else {
                 throw new FileNotFoundException("Is not directory.");
             }
         } catch (Exception e){
+            //Case where the given path is invalid.
             throw new FileNotFoundException("Invalid path.");
         }
-    }
-    /**
-     * Returns a Path from a filename
-     * @return a path from  the filename or null if invalid path
-     */
-    private Path filenameToPath(String filename) {
-        Path file;
-        if (currentDirectory.isAbsolute(filename)) {
-            file = new Path(dataAccess, filename, null);
-        } else {
-            file = new Path(dataAccess, filename, currentDirectory);
-        }
-        return file;
     }
 
     /**
@@ -193,32 +183,43 @@ public class FileSystem implements IFileSystem {
      */
     @Override
     public IFileStream openFile(String filename, char mode) {
-        //TODO changer cette HORREUR
         try {
-            //Path file = filenameToPath(filename);
-            Path file = new Path(dataAccess, obtenirCheminAbsolu(currentDirectory.toString(), filename), null);
+            //Attempting to create a path from filename.
+            Path file = new Path(dataAccess, getAbsolutePath(currentDirectory.toString(), filename), null);
             return new FileStream(file.getFile(), mode, dataAccess);
         } catch (NoSuchElementException noSuchElementException){
+            //If the file doesn't exist:
             if (mode == 'w' || mode == 'a'){
                 try {
+                    //Creating the file.
                     String[] components = removeLastElement(filename);
-                    Path path = new Path(dataAccess, obtenirCheminAbsolu(currentDirectory.toString(), components[0]), null);
+                    //Path to the directory containing the new file.
+                    Path path = new Path(dataAccess, getAbsolutePath(currentDirectory.toString(), components[0]), null);
                     DataFile directory = path.getFile();
+                    //Name of created file.
                     String[] nameAndExtension = splitFileNameAndExtension(components[1]);
+                    //Attributes
                     boolean[] attribut = new boolean[8];
+                    //Adding the file to the data sectors.
                     dataAccess.addFile(directory, nameAndExtension[0], nameAndExtension[1], attribut);
                     return openFile(filename, mode);
                 }
                 catch (Exception e){
                     return null;
                 }
-            }
-            else{
+            } else{
+                //A file that does not exist can't be read.
                 return null;
             }
         }
     }
 
+    /**
+     * Retrieves the name and the extension from a file name of type "name.extension".
+     * @param fileName file name to be split.
+     * @return a string array of length 2. The first element is the name and the second, the extension.
+     * The dot is removed.
+     */
     private static String[] splitFileNameAndExtension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         String[] result = new String[2];
@@ -228,15 +229,22 @@ public class FileSystem implements IFileSystem {
             result[1] = fileName.substring(dotIndex + 1);
         } else {
             result[0] = fileName;
-            result[1] = ""; // Aucune extension trouvée
+            result[1] = ""; //No extension.
         }
-
         return result;
     }
 
+    /**
+     * Retrieves the contents of a directory, given as a filename.
+     * @param filename String file name to a directory.
+     * @return a DataFile vector of the contents of the directory,
+     * a DataFile vector containing the DataFile of the filename if it is a file,
+     * or an empty vector if the file name is invalid.
+     */
     public Vector<DataFile> listSubFile(String filename){
+        //Converting the filename to a Path instance, a read the sub files of the associated file.
         try {
-            Path file = new Path(dataAccess, obtenirCheminAbsolu(currentDirectory.toString(), filename), null);
+            Path file = new Path(dataAccess, getAbsolutePath(currentDirectory.toString(), filename), null);
             return dataAccess.readSubFile(file.getFile());
         }
         catch (Exception e){
@@ -254,27 +262,36 @@ public class FileSystem implements IFileSystem {
     public boolean removeFile(String filename) {
         try{
             boolean remove = true;
-            Path file = new Path(dataAccess, obtenirCheminAbsolu(currentDirectory.toString(), filename), null);
+            Path file = new Path(dataAccess, getAbsolutePath(currentDirectory.toString(), filename), null);
+            //Checking if to-be-removed file is an empty directory.
             if (file.getFile().getAttribut()[4]){
                 remove = dataAccess.isEmpty(file.getFile());
             }
             if (remove) {
-                dataAccess.removeFile(file.getFile());
+                remove = dataAccess.removeFile(file.getFile());
             }
             return remove;
         } catch (Exception e){
+            //Case where the filename is invalid.
             return false;
         }
     }
 
     /**
-     *
+     * Retrieves the directory and the name from a file name representing a new file.
+     * @param filename a filename representing a new file to be added.
+     * @return a String array of length two.
+     * The first element is the string path to the parent directory of the new file.
+     * The second is the full name of the added file (name, dot and extension).
      */
     private String[] removeLastElement(String filename){
+        //Splitting the filename to path components.
         String[] string_elements = filename.split("/");
+        //Case where only the file's full name has been given.
         if (string_elements.length == 1){
             return new String[]{currentDirectory.toString(), filename};
         }
+        //Reconstructing the string representation of the directory.
         String res = "";
         for (int i = 0; i < string_elements.length - 1; i++){
             res += string_elements[i] + '/';
@@ -291,12 +308,14 @@ public class FileSystem implements IFileSystem {
      */
     @Override
     public boolean makeDirectory(String directory_name) {
+        //Splitting the name of the directory from its parent path.
         String[] components = removeLastElement(directory_name);
         try {
-            //Path path = filenameToPath(components[0]);
-            Path path = new Path(dataAccess, obtenirCheminAbsolu(currentDirectory.toString(), components[0]), null);
+            //Attempting to create a path from the parent path.
+            Path path = new Path(dataAccess, getAbsolutePath(currentDirectory.toString(), components[0]), null);
             DataFile directory = path.getFile();
             //TODO faire ça en moins moche
+            //If parent file is a directory and doesn't contain a directory with the same name, the directory is created.
             if (path.getFile().getAttribut()[4] && !path.findInDirectoryBooleanString(directory, components[1])){
                 boolean[] attribut = new boolean[8];
                 attribut[4] = true;
@@ -306,57 +325,50 @@ public class FileSystem implements IFileSystem {
                 return false;
             }
         } catch (Exception e){
+            //Case where the directory name is invalid.
             return false;
         }
     }
 
-    private String obtenirCheminAbsolu(String cheminActuel, String cheminRelatif) {
-        // Vérifier si le chemin relatif est déjà absolu
-        if (cheminRelatif.startsWith("/")) {
-            return cheminRelatif;
+    /**
+     * From an absolute path and a relative path, gives the associated absolute path.
+     * Supports . and .. in the given string representations.
+     * @param currentPath an absolute path.
+     * @param relativePath a relative path to the absolute path.
+     * @return the resulting absolute path as a string.
+     */
+    private String getAbsolutePath(String currentPath, String relativePath) {
+        //Checking if given relative path is already absolute.
+        if (relativePath.startsWith("/")) {
+            java.nio.file.Path chemin = java.nio.file.Paths.get(relativePath).normalize();
+
+            return chemin.toString().replace("\\", "/");
         }
 
-        // Utiliser Paths pour manipuler les chemins
-        java.nio.file.Path cheminActuelPath = java.nio.file.Paths.get(cheminActuel);
-        java.nio.file.Path cheminRelatifPath = java.nio.file.Paths.get(cheminRelatif);
-
-        // Résoudre le chemin relatif par rapport au chemin actuel
+        //Using java.nio.file.Paths to resolve the new path
+        java.nio.file.Path cheminActuelPath = java.nio.file.Paths.get(currentPath);
+        java.nio.file.Path cheminRelatifPath = java.nio.file.Paths.get(relativePath);
         java.nio.file.Path cheminAbsoluPath = cheminActuelPath.resolve(cheminRelatifPath).normalize();
 
-        // Convertir le chemin absolu en une chaîne
-
-        return cheminAbsoluPath.toString();
-    }
-
-
-
-    /**
-     * convert into integer a sub array of a sector
-     * @param sector the sector we crurently read
-     * @param index the index of information
-     * @param size the size of the information
-     * @return the decimal value
-     */
-    private int readBytes(byte[] sector, int index, int size){
-        int res = 0;
-        for (int i = 0; i < size; i++) {
-            res |= (sector[i + index] & 0xFF) << ((size - 1 - i) * 8);
-        }
-        return res;
+        //Necessary to convert \ to / because the package automatically checks for the system's OS.
+        return cheminAbsoluPath.toString().replace("\\", "/");
     }
 
     /**
-     * écrit sur un sector a l'index index et sur une taille size un data entière (adresse d'un élément ou autre)
-     * @param sector sector sur lequel on écrit
-     * @param index index dans le sector
-     * @param size size de la data longeur sur laquel on écrit
-     * @param data data à écrire
+     * Writes in a sector starting a given index, data of a given size.
+     * @param sector sector in which data is written.
+     * @param index starting index in the sector.
+     * @param size size of written data.
+     * @param data int data to be written
      */
     private void writeBytes(byte[] sector, int index, int size, long data){
         for (int i=0; i<size; i++){
             sector[size+index-i-1] = (byte) ((data >> 8*i) & 0xFF);
         }
     }
+
+
+    //Accessors
 
     public DataAccess getDataAccess() {
         return dataAccess;

@@ -3,12 +3,11 @@ package fatfs;
 import drives.Device;
 import fs.IDevice;
 
-import javax.naming.Binding;
-import java.util.zip.DeflaterInputStream;
 
+/**
+ * Allows reading and writing in a device's FAT.
+ */
 public class FatAccess{
-    /**
-     * on ne s'interesse qu'a la Fat. on la lit et on ecrit dedans, entre autres.*/
 
     private IDevice device;
     private int beginFatSector;
@@ -20,61 +19,84 @@ public class FatAccess{
     private int sectorPerFat;
     private int rootIndex;
 
-/**
- * les attributs correspondent aux informations données par le reserved sector du disque virtuel device
- * */
+    /**
+     * Constructor for a FatAccess instance.
+     * Attributes are given by the reserved sectors of the device.
+    * @param device Device from which the FAT is read.
+     * */
     public FatAccess(IDevice device){
         byte[] firstSector = device.read(0);
         this.device = device;
-        this.beginFatSector = readBytes(firstSector, 0x00E, 2); //l'index de la première fat est stocké en 3 + 2 bytes
+        //The index of the first FAT is written in 3 + 2 bytes.
+        this.beginFatSector = readBytes(firstSector, 0x00E, 2);
         this.sizeSector = readBytes(firstSector, 0x00B, 2);
         this.sizeCluster = readBytes(firstSector, 0x00D, 1);
         this.totalNumberSector = readBytes(firstSector, 0x020, 4);
         this.numberOfFat = readBytes(firstSector, 0x010, 1);
         this.sectorPerFat = readBytes(firstSector, 0x024, 4);
-        //this.fatNumberOfCase = (totalNumberSector-beginFatSector-numberOfFat*sectorPerFat)/sizeCluster; version ou le dernier secteur n'est pas complet
+        //In a FAT, a cluster is four bytes.
         this.fatNumberOfCase = this.sizeSector*sectorPerFat/4;
         this.rootIndex = readBytes(firstSector, 0x02C, 4);
     }
 
 
+    /**
+     * Reads the index contained in the FAT at a given FAT index.
+     * @param index at which the index is read.
+     * @return the index contained in the FAT at the given index.
+     */
     public int read(int index){
         int byteIndex = 4*index;
         int indexSector = byteIndex/sizeSector;
         int indexInSector = byteIndex%sizeSector;
-        byte[] sector = device.read(beginFatSector+indexSector);
+        byte[] sector = device.read(beginFatSector + indexSector);
         int res = readBytes(sector, indexInSector, 4);
         return res;
     }
 
+    /**
+     * Writes data in the FAT, at a given index.
+     * @param data int data to be written, in practice, an index.
+     * @param index index at which data is written.
+     */
     public void write(int data, int index){
         int byteIndex = 4*index;
         int indexSector = byteIndex/sizeSector;
         int indexInSector = byteIndex%sizeSector;
-        byte[] sector = device.read(beginFatSector+indexSector);
+        byte[] sector = device.read(beginFatSector + indexSector);
         writeBytes(sector, indexInSector, 4, data);
-        device.write(sector, beginFatSector+indexSector);
+        device.write(sector, beginFatSector + indexSector);
     }
 
+    /**
+     * Removes information written in the FAT, at a given index.
+     * @param index index at which data is erased from the FAT.
+     */
     public void remove(int index){
         write(0x00000000, index);
     }
 
+    /**
+     * Checks if the FAT is empty at a given index.
+     * @param index at which emptiness is tested.
+     * @return true if the FAT is empty at this given index, false if not.
+     */
     public boolean isEmpty(int index){
         int byteIndex = 4*index;
         int indexSector = byteIndex/sizeSector;
         int indexInSector = byteIndex%sizeSector;
-        byte[] sector = device.read(beginFatSector+indexSector);
+        byte[] sector = device.read(beginFatSector + indexSector);
         return readBytes(sector, indexInSector, 4) == 0x00000000;
     }
 
     /**
-     *
-     * @return le nombre de cluster disponible
+     * Returns the number of free clusters.
+     * A free cluster is represented by 0x00000000.
+     * @return the number of free clusters.
      */
     public int totalFreeSpace(){
         int freeSpace = 0;
-        for (int i = 2; i<fatNumberOfCase; i++){
+        for (int i = 2; i < fatNumberOfCase; i++){
             if (read(i) == 0x00000000){
                 freeSpace++;
             }
@@ -83,24 +105,27 @@ public class FatAccess{
     }
 
     /**
-     *
+     * Returns the index of the first free cluster.
      * @return the index of first free cluster
      */
     public int firstFreeCluster(){
-        for (int i = 0; i<fatNumberOfCase; i++){
+
+        for (int i = 2; i<fatNumberOfCase; i++){
             if (read(i) == 0x00000000){
                 return i;
             }
         }
-        return 0; //ce cas n'est pas sensé arrivé puisqu'on appelle pas cette fonction avant d'avoir verifié l'espcae de stockage
+        //It should not happen, because firstFreeCluster is always called after checking
+        //if the device is not full.
+        return 0;
     }
 
     /**
-     * convert into integer a sub array of a sector
-     * @param sector the sector we crurently read
-     * @param index the index of information
-     * @param size the size of the information
-     * @return the decimal value
+     * Converts a sub array of a sector into integer.
+     * @param sector the read sector.
+     * @param index starting index at which the sector is read.
+     * @param size reading size in the sector.
+     * @return the decimal value represented by the chosen sub array.
      */
     private int readBytes(byte[] sector, int index, int size){
         int res = 0;
@@ -111,17 +136,19 @@ public class FatAccess{
     }
 
     /**
-     * écrit sur un sector a l'index index et sur une taille size un data entière (adresse d'un élément ou autre)
-     * @param sector sector sur lequel on écrit
-     * @param index index dans le sector
-     * @param size size de la data longeur sur laquel on écrit
-     * @param data data à écrire
+     * Writes in a sector starting a given index, data of a given size.
+     * @param sector sector in which data is written.
+     * @param index starting index in the sector.
+     * @param size size of written data.
+     * @param data int data to be written
      */
     private void writeBytes(byte[] sector, int index, int size, int data){
-        for (int i=0; i<size; i++){
-            sector[size+index-i-1] = (byte) ((data >> 8*i) & 0xFF);
+        for (int i = 0; i < size; i++){
+            sector[size + index - i - 1] = (byte) ((data >> 8*i) & 0xFF);
         }
     }
+
+    //Accessors
 
     public int getBeginFatSector() {
         return beginFatSector;
